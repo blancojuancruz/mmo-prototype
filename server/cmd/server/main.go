@@ -21,7 +21,10 @@ func main() {
 		log.Println("⚠️ No .env file found, using system environment variables")
 	}
 
-	port, _ := strconv.Atoi(os.Getenv("DB_PORT"))
+	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if err != nil {
+		log.Fatal("❌ Invalid DB_PORT value:", err)
+	}
 	database := db.NewPostgres(db.Config{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     port,
