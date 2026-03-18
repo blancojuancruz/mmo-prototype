@@ -10,10 +10,10 @@ import (
 
 type Config struct {
 	Host     string
-	Port     int
 	User     string
 	Password string
 	DBName   string
+	Port     int
 }
 
 func NewPostgres(cfg Config) *sqlx.DB {

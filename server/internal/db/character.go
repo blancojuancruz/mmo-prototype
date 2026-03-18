@@ -3,16 +3,16 @@ package db
 import "github.com/jmoiron/sqlx"
 
 type Character struct {
-	ID         int     `db:"id"`
-	AccountID  int     `db:"account_id"`
-	Name       string  `db:"name"`
-	ClassID    int     `db:"class_id"`
-	Level      int     `db:"level"`
-	Experience int64   `db:"experience"`
-	PositionX  float64 `db:"position_x"`
-	PositionY  float64 `db:"position_y"`
-	PositionZ  float64 `db:"position_z"`
-	ZoneID     int     `db:"zone_id"`
+	Name       string
+	Experience int64
+	PositionX  float64
+	PositionY  float64
+	PositionZ  float64
+	ID         int
+	AccountID  int
+	ClassID    int
+	Level      int
+	ZoneID     int
 }
 
 func CreateCharacter(db *sqlx.DB, accountID int, name string, classID int) (*Character, error) {

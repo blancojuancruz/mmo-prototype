@@ -1,22 +1,51 @@
-services:
-  postgres:
-    image: postgres:16
-    container_name: mmorpg-postgres
-    environment:
-      POSTGRES_USER: mmorpg
-      POSTGRES_PASSWORD: mmorpg123
-      POSTGRES_DB: mmorpg
-      PGTZ: UTC
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+run:
+  timeout: 5m
+  modules-download-mode: readonly
 
-  redis:
-    image: redis:7
-    container_name: mmorpg-redis
-    ports:
-      - "6379:6379"
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gofmt
+    - goimports
+    - gocritic
+    - bodyclose
+    - noctx
+    - godot
 
-volumes:
-  postgres_data:
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  govet:
+    enable-all: true
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+
+  gofmt:
+    simplify: true
+
+  misspell:
+    locale: US
+
+issues:
+  exclude-rules:
+    # Ignorar errores no manejados en main.go
+    - path: cmd/server/main.go
+      linters:
+        - errcheck
+
+    # Ignorar en tests
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gocritic

@@ -3,6 +3,7 @@ package network
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"mmorpg-server/internal/game"
 )
 
@@ -37,10 +38,14 @@ func (h *Hub) Run() {
 				close(client.send)
 				h.gameState.RemovePlayer(client.ID)
 
-				disconnectMsg, _ := json.Marshal(map[string]string{
+				disconnectMsg, err := json.Marshal(map[string]string{
 					"type": "disconnect",
 					"id":   client.ID,
 				})
+				if err != nil {
+					log.Println("❌ Error marshaling disconnect message:", err)
+					return
+				}
 				h.broadcastToAll(disconnectMsg)
 				fmt.Printf("❌ Player disconnected: %s. Total: %d\n", client.ID, len(h.clients))
 			}

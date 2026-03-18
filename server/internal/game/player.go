@@ -3,17 +3,17 @@ package game
 import "sync"
 
 type PlayerState struct {
-	ID    string  `json:"id"`
-	Type  string  `json:"type"`
-	X     float64 `json:"x"`
-	Y     float64 `json:"y"`
-	Z     float64 `json:"z"`
-	RotY  float64 `json:"rot_y"`
+	ID   string  `json:"id"`
+	Type string  `json:"type"`
+	X    float64 `json:"x"`
+	Y    float64 `json:"y"`
+	Z    float64 `json:"z"`
+	RotY float64 `json:"rot_y"`
 }
 
 type GameState struct {
-	mu      sync.RWMutex
 	Players map[string]*PlayerState
+	mu      sync.RWMutex
 }
 
 func NewGameState() *GameState {

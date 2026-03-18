@@ -7,9 +7,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/joho/godotenv"
 	"mmorpg-server/internal/db"
 	"mmorpg-server/internal/network"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -28,7 +29,6 @@ func main() {
 		Password: os.Getenv("DB_PASSWORD"),
 		DBName:   os.Getenv("DB_NAME"),
 	})
-	defer database.Close()
 
 	db.RunMigrations(database)
 
@@ -39,7 +39,9 @@ func main() {
 		network.ServeWS(hub, w, r)
 	})
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
+		if _, err := w.Write([]byte("pong")); err != nil {
+			log.Println("❌ Error writing response:", err)
+		}
 	})
 	http.HandleFunc("/auth/register", network.RegisterHandler(database))
 	http.HandleFunc("/auth/login", network.LoginHandler(database))
@@ -48,5 +50,8 @@ func main() {
 
 	serverPort := os.Getenv("SERVER_PORT")
 	fmt.Printf("Server listening on port :%s\n", serverPort)
-	log.Fatal(http.ListenAndServe(":"+serverPort, nil))
+	if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
+		database.Close()
+		log.Fatal("❌ Server error:", err)
+	}
 }
