@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://e66pxj7hco8k"]
+
+[ext_resource type="PackedScene" uid="uid://b1q3hh1i8m63k" path="res://scenes/player.tscn" id="1_nnsk1"]
+[ext_resource type="Script" uid="uid://d3dcy2nolr5t4" path="res://scenes/world.gd" id="1_rwgxs"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_e5uuo"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nnsk1"]
+size = Vector3(20, 0.2, 20)
+
+[node name="World" type="Node3D" unique_id=1327512347]
+script = ExtResource("1_rwgxs")
+
+[node name="Floor" type="StaticBody3D" parent="." unique_id=997508419]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=377617412]
+mesh = SubResource("BoxMesh_e5uuo")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1476384097]
+shape = SubResource("BoxShape3D_nnsk1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=562420289]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Player" parent="." unique_id=1660594417 instance=ExtResource("1_nnsk1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="ChatUI" type="CanvasLayer" parent="." unique_id=1072399923]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChatUI" unique_id=2054724310]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -148.0
+offset_right = 410.0
+offset_bottom = 2.0
+grow_vertical = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ChatUI/VBoxContainer" unique_id=2002149386]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="ChatInput" type="LineEdit" parent="ChatUI/VBoxContainer/HBoxContainer" unique_id=1607039011]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Write a message..."
+
+[node name="SendButton" type="Button" parent="ChatUI/VBoxContainer/HBoxContainer" unique_id=1241525702]
+layout_mode = 2
+text = "Send"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ChatUI/VBoxContainer" unique_id=2058420033]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ChatMessages" type="VBoxContainer" parent="ChatUI/VBoxContainer/ScrollContainer" unique_id=254630287]
+layout_mode = 2
+
+[connection signal="pressed" from="ChatUI/VBoxContainer/HBoxContainer/SendButton" to="." method="_on_send_button_pressed"]
