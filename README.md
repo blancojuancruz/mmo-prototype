@@ -1,47 +1,87 @@
+# Server Setup Guide
+
 ## Prerequisites
 
-Before starting, ensure you have the following installed and configured:
-
-* **Docker Desktop**: Installed and running.
-* **Go (Golang)**: Make sure Go is installed on your system to run the server commands.
+| Tool | Purpose |
+|------|---------|
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs PostgreSQL and Redis containers |
+| [Go 1.22+](https://go.dev/dl/) | Runs the game server |
+| [golangci-lint](https://golangci-lint.run/usage/install/) | Code linting (optional) |
 
 ---
 
-## Setup Instructions
+## Quick Start
 
-Follow these steps to get the server up and running:
+### 1. Configure environment
+```bash
+cp .env.example .env
+cp docker-compose.example.yml docker-compose.yml
+```
 
-### 1. Environment Configuration
-* Copy the example environment file and configure your local variables:
-    ```bash
-    cp .env.example .env
-    ```
+Edit both files and set your credentials. Make sure `DB_USER` and `DB_PASSWORD` match between `.env` and `docker-compose.yml`.
 
-### 2. Start Docker
-* Open **Docker Desktop** and wait until it is fully initialized and running.
+### 2. Start the database
 
-### 3. Start the Database Container
-* Always launch the Docker container first to ensure the database is accessible:
-    ```bash
-    docker-compose up -d
-    ```
+Make sure Docker Desktop is running, then:
+```bash
+docker-compose up -d
+```
 
-### 4. Launch the Server
-* First, navigate to the server directory:
-    ```bash
-    cd server
-    ```
-* Then, run the server application:
-    ```bash
-    go run cmd/server/main.go
-    ```
+Verify containers are healthy:
+```bash
+docker ps
+```
+
+You should see `mmorpg-postgres` and `mmorpg-redis` with status `Up`.
+
+### 3. Start the server
+```bash
+cd server
+go run cmd/server/main.go
+```
+
+Expected output:
+```
+🎮 MMORPG Server starting...
+✅ PostgreSQL connected
+✅ Migrations completed
+Server listening on port :8080
+```
+
+---
+
+## Available Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/ping` | Health check |
+| POST | `/auth/register` | Register a new account |
+| POST | `/auth/login` | Login and get character data |
+| POST | `/auth/character` | Create a character |
+| POST | `/game/save_position` | Save character position |
+| WS | `/ws` | WebSocket connection for real-time gameplay |
 
 ---
 
 ## Troubleshooting
 
-If you encounter issues during the setup, check the following:
+**Docker daemon not running**
+Open Docker Desktop and wait for the whale icon in the taskbar before running any `docker` commands.
 
-* **Port Conflict:** If `docker-compose up` fails, ensure the database port is not being used by another local service.
-* **Docker Daemon:** If you get a "cannot connect to the Docker daemon" error, make sure Docker Desktop is actually running.
-* **Dependencies:** If `go run` fails, try running `go mod tidy` in the `server` folder to install any missing dependencies.
+**Port conflict on 5432**
+Another PostgreSQL instance may be running locally. Stop it or change the port in `docker-compose.yml` and `.env`.
+
+**Server fails to connect to DB**
+Always start the Docker containers before running the server. The database must be ready before the server boots.
+
+**Missing dependencies**
+```bash
+cd server
+go mod tidy
+```
+
+**Linting**
+```bash
+cd server
+golangci-lint run
+```
