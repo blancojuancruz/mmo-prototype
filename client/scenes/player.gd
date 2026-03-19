@@ -114,6 +114,7 @@ func _send_position():
 	socket.send_text(JSON.stringify(data))
 
 func _receive_messages():
+	var world = get_parent()
 	while socket.get_available_packet_count() > 0:
 		var packet = socket.get_packet()
 		var text = packet.get_string_from_utf8()
@@ -122,6 +123,8 @@ func _receive_messages():
 			return
 		var msg_id = data.get("id", "")
 		var msg_type = data.get("type", "")
+		if msg_type == "npc_spawn":
+			world.spawn_npc(data)
 		if msg_id == player_id:
 			return
 		if msg_type == "move":
@@ -129,7 +132,6 @@ func _receive_messages():
 		elif msg_type == "disconnect":
 			_handle_remote_disconnect(msg_id)
 		elif msg_type == "chat":
-			var world = get_parent()
 			world.add_chat_message(msg_id, data.get("message", ""))
 
 func _handle_remote_move(data: Dictionary):

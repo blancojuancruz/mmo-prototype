@@ -77,6 +77,8 @@ func LoginHandler(database *sqlx.DB) http.HandlerFunc {
 		}
 
 		account, err := db.GetAccountByEmail(database, req.Email)
+		log.Println("account:", account)
+		log.Println("Upgrade error:", err)
 		if err != nil {
 			sendJSON(w, AuthResponse{Success: false, Message: "Invalid credentials"}, http.StatusUnauthorized)
 			return

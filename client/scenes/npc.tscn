@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://cc38f17dpbst"]
+
+[ext_resource type="Script" uid="uid://d0o6efu5n0w8b" path="res://scenes/npc.gd" id="1_nh2m4"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_nh2m4"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_abqhh"]
+
+[node name="Npc" type="StaticBody3D" unique_id=690154006]
+script = ExtResource("1_nh2m4")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1847320934]
+mesh = SubResource("CapsuleMesh_nh2m4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1159661692]
+shape = SubResource("CapsuleShape3D_abqhh")
+
+[node name="HealthLabel" type="Label3D" parent="." unique_id=1097596272]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+billboard = 1
+text = "100/100"

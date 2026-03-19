@@ -40,10 +40,10 @@ func _login(email: String, password: String):
 
 	var headers = ["Content-Type: application/json"]
 	var body = JSON.stringify({"email": email, "password": password})
+	print("Body:", body)
 	http.request(SERVER + "/auth/login", headers, HTTPClient.METHOD_POST, body)
 
 func _register(email: String, password: String):
-	print("Registering - email:'", email, "' password:'", password, "'")
 	var http = HTTPRequest.new()
 	add_child(http)
 	http.request_completed.connect(_on_register_response.bind(http))
@@ -53,6 +53,7 @@ func _register(email: String, password: String):
 	http.request(SERVER + "/auth/register", headers, HTTPClient.METHOD_POST, body)
 
 func _on_login_response(_result, response_code, _headers, body, http):
+	print("Result:", response_code)
 	http.queue_free()
 	var text = body.get_string_from_utf8()
 	var data = JSON.parse_string(text)
@@ -66,7 +67,7 @@ func _on_login_response(_result, response_code, _headers, body, http):
 			status_label.text = "✅ Logged in — No character found"
 			GameData.account_id = int(data["account_id"])
 			get_tree().change_scene_to_file("res://scenes/character_creation.tscn")
-			# TODO: pantalla de creación de personaje
+			# TODO: Player Creation Screen
 		else:
 			status_label.text = "✅ Welcome " + data["player_name"] + "!"
 			GameData.player_name = data["player_name"]

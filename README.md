@@ -83,5 +83,6 @@ go mod tidy
 **Linting**
 ```bash
 cd server
+gofmt -w .
 golangci-lint run
 ```

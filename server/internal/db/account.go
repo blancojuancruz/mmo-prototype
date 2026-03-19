@@ -6,10 +6,10 @@ import (
 )
 
 type Account struct {
-	Email     string
-	Password  string
-	CreatedAt string
-	ID        int
+	Email     string `db:"email"`
+	Password  string `db:"password"`
+	CreatedAt string `db:"created_at"`
+	ID        int    `db:"id"`
 }
 
 func CreateAccount(db *sqlx.DB, email, password string) (*Account, error) {

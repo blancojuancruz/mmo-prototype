@@ -42,6 +42,32 @@ func RunMigrations(db *sqlx.DB) {
 			created_at  TIMESTAMP DEFAULT NOW()
 		)`,
 
+		`CREATE TABLE IF NOT EXISTS npcs (
+			id           SERIAL PRIMARY KEY,
+			name         VARCHAR(50) UNIQUE NOT NULL,
+			level        INT DEFAULT 1,
+			max_life     BIGINT DEFAULT 100,
+			damage       FLOAT DEFAULT 2.5,
+			damage_type  VARCHAR(10) NOT NULL DEFAULT 'Physical',
+			range_type   VARCHAR(10) NOT NULL DEFAULT 'Melee',
+			attack_speed FLOAT DEFAULT 1.0
+		)`,
+
+		`CREATE TABLE IF NOT EXISTS npcs_spawns (
+			id SERIAL         PRIMARY KEY,
+			npc_id            INT NOT NULL REFERENCES npcs(id),
+			zone_id     			INT REFERENCES zones(id),
+			state             VARCHAR(10) NOT NULL DEFAULT 'Idle',
+			actual_position_x FLOAT DEFAULT 0,
+			actual_position_y FLOAT DEFAULT 0,
+			actual_position_z FLOAT DEFAULT 0,
+			spawn_position_x  FLOAT DEFAULT 0,
+			spawn_position_y  FLOAT DEFAULT 0,
+			spawn_position_z  FLOAT DEFAULT 0,
+			current_life 			BIGINT DEFAULT 100,
+			spawn_timer       INT NOT NULL DEFAULT 10
+		)`,
+
 		`INSERT INTO character_classes (name, description)
 		VALUES
 			('Warrior', 'Melee fighter with high defense'),

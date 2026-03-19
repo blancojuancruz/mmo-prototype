@@ -9,11 +9,11 @@ import (
 )
 
 type Config struct {
-	Host     string
-	User     string
-	Password string
-	DBName   string
-	Port     int
+	Host     string `db:"host"`
+	User     string `db:"user"`
+	Password string `db:"password"`
+	DBName   string `db:"db_name"`
+	Port     int    `db:"port"`
 }
 
 func NewPostgres(cfg Config) *sqlx.DB {

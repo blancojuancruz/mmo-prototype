@@ -16,7 +16,7 @@ import (
 func main() {
 	fmt.Println("🎮 MMORPG Server starting...")
 
-	// Cargar .env — si no existe usa las variables del sistema
+	// Cargar .env
 	if err := godotenv.Load(); err != nil {
 		log.Println("⚠️ No .env file found, using system environment variables")
 	}
@@ -37,6 +37,13 @@ func main() {
 
 	hub := network.NewHub()
 	go hub.Run()
+
+	// Load NPCS
+	npcs, err := db.GetAllNpcSpawns(database)
+	if err != nil {
+		log.Fatal("❌ Error getting NPCS:", err)
+	}
+	hub.LoadNpcs(npcs)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		network.ServeWS(hub, w, r)
