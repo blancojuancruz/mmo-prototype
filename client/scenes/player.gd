@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-const SPEED = 5.0
+const SPEED = 2.5
 const GRAVITY = 9.8
 const MOUSE_SENSITIVITY = 0.005
 const CAMERA_MIN_ANGLE = -60.0
@@ -21,10 +21,12 @@ var remote_players = {}
 var remote_player_scene = preload("res://scenes/remote_player.tscn")
 var is_quitting = false
 var save_timer = 0.0
+var rotating_camera: bool = false
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	spring_arm.rotation_degrees.x = camera_rotation_x
+	print(anim_player)
 	anim_player.play("AnimPack1/Idle")
 	_connect_to_server()
 	get_tree().set_auto_accept_quit(false)
@@ -33,16 +35,25 @@ func _ready():
 func _connect_to_server():
 	var err = socket.connect_to_url(SERVER_URL + "?id=" + player_id)
 	if err != OK:
-		print("❌ Error connecting to server")
+		print("Error connecting to server")
 	else:
-		print("🔌 Connecting to server...")
+		print("Connecting to server...")
 
 func _input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.is_pressed():
+				rotating_camera = true
+				Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
+			else:
+				rotating_camera = false
+				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	if event is InputEventMouseMotion:
-		rotation.y -= event.relative.x * MOUSE_SENSITIVITY
-		camera_rotation_x -= event.relative.y * MOUSE_SENSITIVITY * 57.3
-		camera_rotation_x = clamp(camera_rotation_x, CAMERA_MIN_ANGLE, CAMERA_MAX_ANGLE)
-		spring_arm.rotation_degrees.x = camera_rotation_x
+		if rotating_camera:
+			spring_arm.rotation.y -= event.relative.x * MOUSE_SENSITIVITY
+			camera_rotation_x -= event.relative.y * MOUSE_SENSITIVITY * 57.3
+			camera_rotation_x = clamp(camera_rotation_x, CAMERA_MIN_ANGLE, CAMERA_MAX_ANGLE)
+			spring_arm.rotation_degrees.x = camera_rotation_x
 	if event.is_action_pressed("ui_cancel"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
@@ -57,7 +68,6 @@ func _physics_process(delta):
 	if state == WebSocketPeer.STATE_OPEN:
 		if not connected:
 			connected = true
-			print("✅ Connected as: " + player_id)
 		send_timer += delta
 		if send_timer >= SEND_RATE:
 			send_timer = 0.0
@@ -65,8 +75,7 @@ func _physics_process(delta):
 		_receive_messages()
 	elif state == WebSocketPeer.STATE_CLOSED and connected:
 		connected = false
-		print("❌ Disconnected")
-
+		
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
 
@@ -75,30 +84,56 @@ func _physics_process(delta):
 		direction -= transform.basis.z
 	if Input.is_action_pressed("move_back") or Input.is_action_pressed("ui_down"):
 		direction += transform.basis.z
-	if Input.is_action_pressed("move_left") or Input.is_action_pressed("ui_left"):
+	if Input.is_action_pressed("strafe_left"):
 		direction -= transform.basis.x
-	if Input.is_action_pressed("move_right") or Input.is_action_pressed("ui_right"):
+	if Input.is_action_pressed("strafe_right") or Input.is_action_pressed("ui_right"):
 		direction += transform.basis.x
+	if Input.is_action_pressed("rotate_left"):
+		rotation.y += MOUSE_SENSITIVITY * 2
+	if Input.is_action_pressed("rotate_right"):
+		rotation.y -= MOUSE_SENSITIVITY * 2
 
 	var is_moving = direction != Vector3.ZERO
 	var is_running = Input.is_action_pressed("run")
+	var is_walking_back = Input.is_action_pressed("move_back")
 
 	if is_moving:
 		direction = direction.normalized()
-		var current_speed = SPEED * 2.0 if is_running else SPEED
+		var current_speed
+		if is_running:
+			current_speed = SPEED * 2.0
+		elif is_walking_back:
+			current_speed = SPEED - 1.0
+		else:
+			current_speed = SPEED
 		velocity.x = direction.x * current_speed
 		velocity.z = direction.z * current_speed
-		if is_running:
+		if Input.is_action_pressed("strafe_left"):
+			if anim_player.current_animation != "AnimPack1/StrafeLeft":
+				anim_player.play("AnimPack1/StrafeLeft")
+		elif Input.is_action_pressed("strafe_right"):
+			if anim_player.current_animation != "AnimPack1/StrafeRight":
+				anim_player.play("AnimPack1/StrafeRight")
+		elif is_running:
 			if anim_player.current_animation != "AnimPack1/Run":
 				anim_player.play("AnimPack1/Run")
 		else:
-			if anim_player.current_animation != "AnimPack1/Walk":
+			if Input.is_action_pressed("move_forward") and anim_player.current_animation != "AnimPack1/Walk":
 				anim_player.play("AnimPack1/Walk")
+			elif Input.is_action_pressed("move_back") and anim_player.current_animation != "AnimPack1/WalkBack":
+				anim_player.play("AnimPack1/WalkBack")
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
-		if anim_player.current_animation != "AnimPack1/Idle":
-			anim_player.play("AnimPack1/Idle")
+		if Input.is_action_pressed("rotate_left"):
+			if anim_player.current_animation != "AnimPack1/TurnLeft":
+				anim_player.play("AnimPack1/TurnLeft")
+		elif Input.is_action_pressed("rotate_right"):
+			if anim_player.current_animation != "AnimPack1/TurnRight":
+				anim_player.play("AnimPack1/TurnRight")
+		if not Input.is_action_pressed("rotate_left") and not Input.is_action_pressed("rotate_right"):
+			if anim_player.current_animation != "AnimPack1/Idle":
+				anim_player.play("AnimPack1/Idle")
 
 	move_and_slide()
 
@@ -125,7 +160,7 @@ func _receive_messages():
 		var msg_type = data.get("type", "")
 		if msg_type == "npc_spawn":
 			world.spawn_npc(data)
-		if msg_id == player_id:
+		if msg_type == "move" and msg_id == player_id:
 			return
 		if msg_type == "move":
 			_handle_remote_move(data)
@@ -133,6 +168,13 @@ func _receive_messages():
 			_handle_remote_disconnect(msg_id)
 		elif msg_type == "chat":
 			world.add_chat_message(msg_id, data.get("message", ""))
+		elif msg_type == "player_damage":
+			print("Daño recibido :", data.get("damage", ""))
+		elif msg_type == "npc_damage":
+			var current_life = data.get("current_life", "")
+			var npc_id = data.get("npc_id", "")
+			if world.remote_npcs.has(npc_id):
+				world.remote_npcs[npc_id].update_health(current_life)
 
 func _handle_remote_move(data: Dictionary):
 	var id = data["id"]
@@ -142,14 +184,14 @@ func _handle_remote_move(data: Dictionary):
 		remote.name = id
 		get_parent().add_child(remote)
 		remote_players[id] = remote
-		print("👤 New player joined: " + id)
+		print("New player joined: " + id)
 	remote_players[id].update_state(data)
 
 func _handle_remote_disconnect(id: String):
 	if remote_players.has(id):
 		remote_players[id].queue_free()
 		remote_players.erase(id)
-		print("👋 Player left: " + id)
+		print("Player left: " + id)
 
 func _notification(what): 
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
@@ -183,3 +225,12 @@ func send_chat(message: String):
 	socket.send_text(JSON.stringify(data))
 	var world = get_parent()
 	world.add_chat_message(player_id, message)
+	
+func attack_npc(npc_spawn_id):
+	var data = {
+		"type": "attack",
+		"npc_id": npc_spawn_id,
+		"id": GameData.player_name,
+		"damage": 10,
+		}
+	socket.send_text(JSON.stringify(data))

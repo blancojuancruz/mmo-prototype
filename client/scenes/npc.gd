@@ -2,7 +2,7 @@ extends StaticBody3D
 
 @onready var health_label = $HealthLabel
 
-var npc_id: int = 0
+var npc_spawn_id: String = ""
 var npc_state = "idle"
 var current_life: int = 0
 var max_life: int = 0

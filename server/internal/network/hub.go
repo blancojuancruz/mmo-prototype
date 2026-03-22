@@ -2,7 +2,6 @@ package network
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"mmorpg-server/internal/db"
 	"mmorpg-server/internal/game"
@@ -59,7 +58,6 @@ func (h *Hub) Run() {
 					CurrentLife: npc.CurrentLife,
 				})
 				if err != nil {
-					log.Println("❌ Error marshaling NPC:", err)
 					continue
 				}
 				client.send <- msg
@@ -80,7 +78,6 @@ func (h *Hub) Run() {
 					return
 				}
 				h.broadcastToAll(disconnectMsg)
-				fmt.Printf("❌ Player disconnected: %s. Total: %d\n", client.ID, len(h.clients))
 			}
 
 		case message := <-h.broadcast:
@@ -149,6 +146,10 @@ func (h *Hub) LoadNpcs(npcs []db.NpcSpawnFull) {
 		}
 		npc.AttackChan = make(chan game.AttackEvent, 10)
 		npc.BroadcastChan = h.broadcast
+		if npc.CurrentLife > npc.MaxLife {
+			npc.CurrentLife = npc.MaxLife
+		}
 		h.gameState.AddNpc(npc)
+		go npc.Run()
 	}
 }

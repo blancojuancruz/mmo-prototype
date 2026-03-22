@@ -23,11 +23,13 @@ text = "MMORPG"
 [node name="EmailInput" type="LineEdit" parent="VBoxContainer" unique_id=1736101075]
 layout_mode = 2
 accessibility_name = "EmailInput"
+text = "test1@mmorpg.com"
 placeholder_text = "Email"
 
 [node name="PasswordInput" type="LineEdit" parent="VBoxContainer" unique_id=1322038972]
 layout_mode = 2
 accessibility_name = "PasswordInput"
+text = "123456"
 placeholder_text = "Password"
 secret = true
 

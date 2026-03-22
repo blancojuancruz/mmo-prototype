@@ -27,7 +27,6 @@ func _on_create_button_pressed():
 	http.request_completed.connect(_on_create_response.bind(http))
 
 	var headers = ["Content-Type: application/json"]
-	# get_selected_id() devuelve el ID que asignamos en add_item()
 	var class_id = class_option.get_selected_id()
 	var body = JSON.stringify({
 		"account_id": GameData.account_id,

@@ -2,7 +2,6 @@
 
 [ext_resource type="PackedScene" uid="uid://b1q3hh1i8m63k" path="res://scenes/player.tscn" id="1_nnsk1"]
 [ext_resource type="Script" uid="uid://d3dcy2nolr5t4" path="res://scenes/world.gd" id="1_rwgxs"]
-[ext_resource type="PackedScene" uid="uid://cc38f17dpbst" path="res://scenes/npc.tscn" id="3_4wyf3"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_e5uuo"]
 size = Vector3(20, 0.2, 20)
@@ -59,7 +58,5 @@ size_flags_vertical = 3
 
 [node name="ChatMessages" type="VBoxContainer" parent="ChatUI/VBoxContainer/ScrollContainer" unique_id=254630287]
 layout_mode = 2
-
-[node name="Npc" parent="." unique_id=690154006 instance=ExtResource("3_4wyf3")]
 
 [connection signal="pressed" from="ChatUI/VBoxContainer/HBoxContainer/SendButton" to="." method="_on_send_button_pressed"]

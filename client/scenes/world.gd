@@ -39,14 +39,28 @@ func add_chat_message(sender: String, message: String):
 func spawn_npc(data):
 	var remote = remote_npc_scene.instantiate()
 	remote.position = Vector3(data["x"], 1.0, data["z"])
-	remote.npc_id = data["id"]
+	remote.npc_spawn_id = str(data["id"])
 	remote.max_life = data["max_life"]
 	remote.current_life = data["current_life"]
 	remote_npcs[data["id"]] = remote
 	add_child(remote)
-	
-	
-	
-	
-	
-	
+
+func _unhandled_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			if event.is_pressed():
+				var max_distance = 150
+				var click_origin
+				var click_direction
+				var click_destiny
+				var world_physics = get_world_3d().direct_space_state
+				var camera = get_viewport().get_camera_3d()
+				click_origin = camera.project_ray_origin(event.position)
+				click_direction = camera.project_ray_normal(event.position)
+				click_destiny = click_origin + click_direction * max_distance
+				var query = PhysicsRayQueryParameters3D.create(click_origin, click_destiny)
+				var result = world_physics.intersect_ray(query)
+				if !result.is_empty():
+					if result["collider"].is_in_group("npc"):
+						var player = $Player
+						player.attack_npc(result["collider"].npc_spawn_id)
